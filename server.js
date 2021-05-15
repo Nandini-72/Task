@@ -26,16 +26,21 @@ app.get("/success", (req, res) => {
   res.render("success");
 });
 app.get("/all", async (req, res) => {
-  const users = await User.find();
-  res.render("list", { users: users });
+  try {
+    const users = await User.find();
+    res.render("list", { users: users });
+  } catch (e) {
+    console.log(e);
+    res.render("/");
+  }
 });
 app.get("/edit/:id", async (req, res) => {
   const user = await User.findById(req.params.id);
   res.render("edit", { user: user });
 });
-app.get("/preRegistered",(req,res)=>{
+app.get("/preRegistered", (req, res) => {
   res.render("preRegistered");
-})
+});
 app.put("/:id", async (req, res) => {
   let user = await User.findById(req.params.id);
   let count;
@@ -43,20 +48,20 @@ app.put("/:id", async (req, res) => {
     user.first_name = req.body.firstname;
     user.last_name = req.body.lastname;
     user.email = req.body.email;
-    if(user.contact !== req.body.contact){
+    if (user.contact != req.body.contact) {
       let existingUser = await User.findOne({ contact: req.body.contact });
-      if(existingUser == null){
+      if (existingUser == null) {
         user.contact = req.body.contact;
-      }else{
-        res.redirect('/preRegistered')
+      } else {
+        res.redirect("/preRegistered");
         return;
       }
     }
-    res.redirect("/all")
+    res.redirect("/all");
     user = await user.save();
-  } catch(e){
+  } catch (e) {
     console.log(e);
-    res.redirect("/edit/id")
+    res.redirect("/edit/id");
   }
 });
 app.delete("/:id", async (req, res) => {
@@ -70,23 +75,28 @@ app.delete("/:id", async (req, res) => {
 });
 app.post("/register", async (req, res) => {
   const contact = req.body.contact;
-  let user = await User.findOne({ contact: contact });
-  if (user == null) {
-    let user = new User({
-      first_name: req.body.firstname,
-      last_name: req.body.lastname,
-      email: req.body.email,
-      contact: req.body.contact,
-    });
-    try {
-      user = await user.save();
-      res.redirect("/success");
-    } catch (e) {
-      console.log(e);
-      res.redirect("/register");
+  try {
+    let user = await User.findOne({ contact: contact });
+    if (user == null) {
+      let user = new User({
+        first_name: req.body.firstname,
+        last_name: req.body.lastname,
+        email: req.body.email,
+        contact: req.body.contact,
+      });
+      try {
+        user = await user.save();
+        res.redirect("/success");
+      } catch (e) {
+        console.log(e);
+        res.redirect("/register");
+      }
+    } else {
+      res.redirect("/preRegistered");
     }
-  } else {
-    res.redirect("/preRegistered");
+  } catch (e) {
+    console.log(e);
+    res.redirect("/");
   }
 });
 
