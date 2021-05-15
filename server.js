@@ -27,7 +27,7 @@ app.get("/success", (req, res) => {
 });
 app.get("/all", async (req, res) => {
   try {
-    const users = await User.find();
+    let users = await User.find();
     res.render("list", { users: users });
   } catch (e) {
     console.log(e);
@@ -42,9 +42,8 @@ app.get("/preRegistered", (req, res) => {
   res.render("preRegistered");
 });
 app.put("/:id", async (req, res) => {
-  let user = await User.findById(req.params.id);
-  let count;
   try {
+    let user = await User.findById(req.params.id)
     user.first_name = req.body.firstname;
     user.last_name = req.body.lastname;
     user.email = req.body.email;
